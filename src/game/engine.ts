@@ -57,13 +57,13 @@ export function bumpMultiplier(v: number): number {
 export function evaluate(board: Board, mults: MultiplierGrid, bet: number) {
   const clusters = findClusters(board);
   const wins: ClusterWin[] = clusters.map(({ symbol, positions }) => {
-    const sum = positions.reduce((s, p) => s + (mults[p] >= 2 ? mults[p] : 0), 0);
+    const sum = positions.reduce((s, p) => s + (mults[p]! >= 2 ? mults[p]! : 0), 0);
     const multiplier = Math.max(1, sum);
     return { symbol, positions, size: positions.length, multiplier, win: round2(bet * BASE_PAY[symbol] * sizeFactor(positions.length) * multiplier) };
   });
   const removed = [...new Set(wins.flatMap((w) => w.positions))].sort((a, b) => a - b);
   const after = mults.slice();
-  for (const p of removed) after[p] = bumpMultiplier(after[p]);
+  for (const p of removed) after[p] = bumpMultiplier(after[p]!);
   return { wins, removed, multipliersAfter: after, cascadeWin: round2(wins.reduce((s, w) => s + w.win, 0)) };
 }
 
@@ -72,11 +72,11 @@ export function applyGravity(board: Board, removed: number[]): { board: (SymbolI
   const rm = new Set(removed), out: (SymbolId | null)[] = new Array(CELLS).fill(null), empties: number[] = [];
   for (let c = 0; c < COLS; c++) {
     const keep: SymbolId[] = [];
-    for (let r = 0; r < ROWS; r++) { const i = r * COLS + c; if (!rm.has(i)) keep.push(board[i]); }
+    for (let r = 0; r < ROWS; r++) { const i = r * COLS + c; if (!rm.has(i)) keep.push(board[i]!); }
     const missing = ROWS - keep.length;
     for (let r = 0; r < ROWS; r++) {
       const i = r * COLS + c;
-      if (r < missing) empties.push(i); else out[i] = keep[r - missing];
+      if (r < missing) empties.push(i); else out[i] = keep[r - missing]!;
     }
   }
   return { board: out, empties };

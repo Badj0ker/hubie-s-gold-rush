@@ -44,7 +44,7 @@ export function SlotGame() {
   const [infoOpen, setInfoOpen] = useState(false);
   const [celebrate, setCelebrate] = useState<number | null>(null);
   const [freeSpins, setFreeSpins] = useState<number | null>(null);
-  const bet = BETS[betIdx];
+  const bet = BETS[betIdx]!;
 
   useEffect(() => { board.current?.setBoard(provider.getInitialBoard()); }, [provider]);
   useEffect(() => { provider.setScenario(scenario); }, [scenario, provider]);
@@ -71,7 +71,7 @@ export function SlotGame() {
     setBonusOpen(false); if (balance < price) return;
     setBusy(true); setWin(0); setBalance((b) => b - price);
     const spins = provider.buyBonus(bet); let total = 0;
-    for (let i = 0; i < spins.length; i++) { setFreeSpins(spins.length - i); total += await play(spins[i], total); setWin(Math.round(total * 100) / 100); }
+    for (let i = 0; i < spins.length; i++) { setFreeSpins(spins.length - i); total += await play(spins[i]!, total); setWin(Math.round(total * 100) / 100); }
     setFreeSpins(null); setBalance((b) => b + total);
     setCelebrate(total); await new Promise((r) => setTimeout(r, 2600)); setCelebrate(null);
     setBusy(false);
@@ -79,6 +79,7 @@ export function SlotGame() {
 
   useEffect(() => {
     if (auto > 0 && !busy) { const t = setTimeout(() => { setAuto((a) => a - 1); spin(); }, 350); return () => clearTimeout(t); }
+    return undefined;
   }, [auto, busy, spin]);
 
   useEffect(() => {

@@ -56,7 +56,7 @@ export const BoardCanvas = forwardRef<BoardHandle, { className?: string }>(funct
       ctx.clearRect(0, 0, W, W);
       s.pulse = now / 1000;
       for (let i = 0; i < CELLS; i++) {
-        const r = Math.floor(i / COLS), c = i % COLS, x = c * cs, y = r * cs, m = s.mults[i];
+        const r = Math.floor(i / COLS), c = i % COLS, x = c * cs, y = r * cs, m = s.mults[i]!;
         ctx.fillStyle = m >= 1 ? "rgba(255,190,60,0.28)" : "rgba(10,30,70,0.75)";
         ctx.strokeStyle = m >= 1 ? "rgba(255,210,90,0.9)" : "rgba(80,140,220,0.35)";
         ctx.lineWidth = m >= 1 ? 2 : 1;
@@ -76,8 +76,8 @@ export const BoardCanvas = forwardRef<BoardHandle, { className?: string }>(funct
       ctx.restore();
       // multiplier badges
       for (let i = 0; i < CELLS; i++) {
-        const m = s.mults[i]; if (m < 2) continue;
-        const r = Math.floor(i / COLS), c = i % COLS, p = s.pop[i];
+        const m = s.mults[i]!; if (m < 2) continue;
+        const r = Math.floor(i / COLS), c = i % COLS, p = s.pop[i]!;
         const bx = c * cs + cs * 0.72, by = r * cs + cs * 0.74, rad = cs * 0.22 * (1 + p * 0.8);
         ctx.save(); ctx.translate(bx, by);
         ctx.beginPath(); for (let k = 0; k < 6; k++) { const a = Math.PI / 3 * k + Math.PI / 6; ctx.lineTo(Math.cos(a) * rad, Math.sin(a) * rad); } ctx.closePath();
@@ -122,7 +122,7 @@ export const BoardCanvas = forwardRef<BoardHandle, { className?: string }>(funct
     const from = s.cells.map((c) => c.y);
     await tween(520, (t) => s.cells.forEach((c, i) => {
       const col = i % COLS, row = Math.floor(i / COLS), lt = Math.min(1, Math.max(0, (t * 1.6 - col * 0.06 - (ROWS - 1 - row) * 0.02)));
-      c.y = from[i] + (row - from[i]) * easeOutBack(lt);
+      c.y = from[i]! + (row - from[i]!) * easeOutBack(lt);
     }));
   };
 
@@ -135,20 +135,20 @@ export const BoardCanvas = forwardRef<BoardHandle, { className?: string }>(funct
       const s = st.current; s.speed = turbo ? 2.2 : 1;
       s.mults = r.initialMultipliers.slice();
       const fromY = s.cells.map((c) => c.y);
-      await tween(240, (t) => s.cells.forEach((c, i) => { c.y = fromY[i] + easeIn(t) * (ROWS + 2); }));
+      await tween(240, (t) => s.cells.forEach((c, i) => { c.y = fromY[i]! + easeIn(t) * (ROWS + 2); }));
       await dropIn(r.initialBoard);
       await sleep(120 / s.speed);
       for (let k = 0; k < r.cascades.length; k++) {
-        const cas = r.cascades[k], rm = new Set(cas.removed);
+        const cas = r.cascades[k]!, rm = new Set(cas.removed);
         s.cells.forEach((c, i) => (c.win = rm.has(i)));
         await tween(220, (t) => (s.dim = t));
         await sleep(520 / s.speed);
-        for (const i of cas.removed) { if (cas.multipliersAfter[i] !== s.mults[i] && cas.multipliersAfter[i] >= 2) s.pop[i] = 1; burst(i); }
+        for (const i of cas.removed) { if (cas.multipliersAfter[i] !== s.mults[i] && cas.multipliersAfter[i]! >= 2) s.pop[i] = 1; burst(i); }
         s.mults = cas.multipliersAfter.slice();
-        const cs = s.size / COLS, mid = cas.removed[Math.floor(cas.removed.length / 2)];
+        const cs = s.size / COLS, mid = cas.removed[Math.floor(cas.removed.length / 2)]!;
         s.floaters.push({ text: fmt(cas.cascadeWin), x: (mid % COLS) * cs + cs / 2, y: Math.floor(mid / COLS) * cs + cs / 2, t: 0 });
         onCascade?.(cas.cascadeWin, k);
-        await tween(260, (t) => cas.removed.forEach((i) => { s.cells[i].scale = 1 + t * 0.5; s.cells[i].alpha = 1 - t; }));
+        await tween(260, (t) => cas.removed.forEach((i) => { s.cells[i]!.scale = 1 + t * 0.5; s.cells[i]!.alpha = 1 - t; }));
         // gravity: survivors fall, new symbols enter from above
         const next: Cell[] = new Array(CELLS), starts: number[] = new Array(CELLS);
         for (let c = 0; c < COLS; c++) {
@@ -157,12 +157,12 @@ export const BoardCanvas = forwardRef<BoardHandle, { className?: string }>(funct
           const missing = ROWS - surv.length;
           for (let row = 0; row < ROWS; row++) {
             const i = row * COLS + c;
-            next[i] = { sym: cas.nextBoard[i], y: 0, scale: 1, alpha: 1, win: false };
-            starts[i] = row < missing ? row - missing - 0.5 : surv[row - missing];
+            next[i] = { sym: cas.nextBoard[i]!, y: 0, scale: 1, alpha: 1, win: false };
+            starts[i] = row < missing ? row - missing - 0.5 : surv[row - missing]!;
           }
         }
         s.cells = next; s.dim = 0;
-        await tween(400, (t) => next.forEach((c, i) => { const row = Math.floor(i / COLS); c.y = starts[i] + (row - starts[i]) * easeOutBack(t); }));
+        await tween(400, (t) => next.forEach((c, i) => { const row = Math.floor(i / COLS); c.y = starts[i]! + (row - starts[i]!) * easeOutBack(t); }));
         await sleep(90 / s.speed);
       }
       s.cells.forEach((c) => (c.win = false)); s.dim = 0;

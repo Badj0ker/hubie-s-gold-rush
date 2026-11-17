@@ -7,8 +7,8 @@ export function rng(seed: number) {
   return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 type R = () => number;
-const pick = (r: R): SymbolId => (r() < 0.015 ? "wild" : PAY_SYMBOLS[Math.floor(r() * PAY_SYMBOLS.length)]);
-const pickPay = (r: R): SymbolId => PAY_SYMBOLS[Math.floor(r() * PAY_SYMBOLS.length)];
+const pick = (r: R): SymbolId => (r() < 0.015 ? "wild" : PAY_SYMBOLS[Math.floor(r() * PAY_SYMBOLS.length)]!);
+const pickPay = (r: R): SymbolId => PAY_SYMBOLS[Math.floor(r() * PAY_SYMBOLS.length)]!;
 const emptyMults = (): MultiplierGrid => new Array(CELLS).fill(0);
 
 /** Fill given cells so the board contains no winning cluster. */
@@ -26,7 +26,7 @@ const noWinRefill = (r: R): Refill => (p, e) => fillNoWin(p, e, r);
 /** Fill every empty cell with one symbol → guaranteed connected win for `chains` cascades. */
 const chainRefill = (r: R, chains: number, order: SymbolId[]): Refill => (p, e, k) => {
   if (k >= chains || e.length < 5) return fillNoWin(p, e, r);
-  const b = p.slice(); for (const i of e) b[i] = order[k % order.length]; return b as Board;
+  const b = p.slice(); for (const i of e) b[i] = order[k % order.length]!; return b as Board;
 };
 function plant(board: Board, cells: number[], sym: SymbolId): Board { const b = board.slice(); for (const i of cells) b[i] = sym; return b; }
 const rc = (r: number, c: number) => r * COLS + c;
