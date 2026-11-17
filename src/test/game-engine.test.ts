@@ -6,7 +6,7 @@ import { CELLS, type Board } from "@/game/types";
 const p = new MockGameProvider(1);
 describe("cluster rules", () => {
   it("needs 5 orthogonally connected symbols", () => {
-    const b = Array.from({ length: CELLS }, (_, i) => (["red", "blue", "green", "purple"] as const)[(i + Math.floor(i / 7)) % 4]) as Board;
+    const b = Array.from({ length: CELLS }, (_, i) => (["red", "blue", "green", "purple"] as const)[((i % 7) + 2 * Math.floor(i / 7)) % 4]) as Board;
     expect(findClusters(b)).toHaveLength(0);
     const four = b.slice(); [0, 1, 2, 3].forEach((i) => (four[i] = "chest"));
     expect(findClusters(four)).toHaveLength(0);
@@ -19,7 +19,7 @@ describe("cluster rules", () => {
     expect([0, 1, 2, 64, 128].map(bumpMultiplier)).toEqual([1, 2, 4, 128, 128]);
   });
   it("cluster win multiplies by sum of active spots", () => {
-    const b = Array.from({ length: CELLS }, (_, i) => (["red", "blue", "green", "purple"] as const)[(i + Math.floor(i / 7)) % 4]) as Board;
+    const b = Array.from({ length: CELLS }, (_, i) => (["red", "blue", "green", "purple"] as const)[((i % 7) + 2 * Math.floor(i / 7)) % 4]) as Board;
     [0, 1, 2, 3, 4].forEach((i) => (b[i] = "chest"));
     const m = new Array(CELLS).fill(0); m[0] = 2; m[1] = 4;
     expect(evaluate(b, m, 1).wins[0].win).toBe(6); // 1 * 1 * (2+4)
