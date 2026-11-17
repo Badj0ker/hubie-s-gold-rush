@@ -28,3 +28,6 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+## Game architecture
+- All slot math (clusters, multipliers, payouts, scenarios) lives in `src/game/engine.ts` + a `GameProvider` implementation; the canvas renderer (`BoardCanvas`) only animates provider results — so the mock can be swapped for the real engine.
