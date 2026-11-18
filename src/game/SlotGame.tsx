@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Menu, Info, Minus, Plus, RotateCw, Volume2, VolumeX, Zap } from "lucide-react";
+import { Download, Menu, Info, Minus, Plus, RotateCw, Volume2, VolumeX, Zap } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { BoardCanvas, type BoardHandle } from "./BoardCanvas";
 import { MockGameProvider } from "./mockProvider";
@@ -105,6 +105,11 @@ export function SlotGame() {
             </button>
           ))}
         </div>
+
+        <a href="/downloads/hubie_rig.zip" download="hubie_rig.zip"
+          className="absolute right-2 top-2 flex items-center gap-1.5 rounded-xl border-2 border-gold bg-panel/90 px-3 py-1.5 font-display text-sm text-gold shadow-lg hover:bg-gold/20 sm:right-4 sm:top-4">
+          <Download className="h-4 w-4" /> Download Hubie Rig (.zip)
+        </a>
 
         <img src={logo} alt="Hubie's Gold Rush" className="logo-fade mt-10 w-[min(70vw,360px)] sm:mt-2" />
 
