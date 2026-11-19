@@ -32,3 +32,4 @@ use the editor.
 ## Game architecture
 - All slot math (clusters, multipliers, payouts, scenarios) lives in `src/game/engine.ts` + a `GameProvider` implementation; the canvas renderer (`BoardCanvas`) only animates provider results — so the mock can be swapped for the real engine.
 - Hubie rig art/demo ships as a static zip in public/downloads; src/game/rig/types.ts is the rig contract, kept separate from the engine.
+- Win celebration tiers/panel number boxes live in src/game/win/winTiers.ts (presentation only); Win Pack ships as static zip in public/downloads.

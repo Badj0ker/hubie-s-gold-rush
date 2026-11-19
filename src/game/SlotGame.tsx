@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { BoardCanvas, type BoardHandle } from "./BoardCanvas";
 import { MockGameProvider } from "./mockProvider";
 import type { ScenarioId } from "./types";
+import { WinCelebration } from "./win/WinCelebration";
+import { tierFor, type WinTierId } from "./win/winTiers";
 import logo from "@/assets/hubies-logo.png";
 import hubie from "@/assets/hubie.png";
 import bg from "@/assets/bg-island.jpg";
@@ -42,7 +44,11 @@ export function SlotGame() {
   const [bonusOpen, setBonusOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
-  const [celebrate, setCelebrate] = useState<number | null>(null);
+  const [celebrate, setCelebrate] = useState<{ amount: number; bet: number; tier?: WinTierId } | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const doneRef = useRef<(() => void) | null>(null);
+  const showWin = (c: { amount: number; bet: number; tier?: WinTierId }) => new Promise<void>((res) => { doneRef.current = res; setCelebrate(c); });
+  const closeWin = useCallback(() => { setCelebrate(null); doneRef.current?.(); doneRef.current = null; }, []);
   const [freeSpins, setFreeSpins] = useState<number | null>(null);
   const bet = BETS[betIdx]!;
 
@@ -62,7 +68,7 @@ export function SlotGame() {
     const result = provider.spin(bet);
     await play(result);
     setWin(result.totalWin); setBalance((b) => b + result.totalWin);
-    if (result.bigWin) { setCelebrate(result.totalWin); if (sound) [660, 880, 1100].forEach((f, i) => setTimeout(() => beep(f), i * 150)); await new Promise((r) => setTimeout(r, 2600)); setCelebrate(null); }
+    if (tierFor(result.totalWin, bet)) await showWin({ amount: result.totalWin, bet });
     setBusy(false);
   }, [busy, balance, bet, provider, play, sound]);
 
@@ -73,7 +79,7 @@ export function SlotGame() {
     const spins = provider.buyBonus(bet); let total = 0;
     for (let i = 0; i < spins.length; i++) { setFreeSpins(spins.length - i); total += await play(spins[i]!, total); setWin(Math.round(total * 100) / 100); }
     setFreeSpins(null); setBalance((b) => b + total);
-    setCelebrate(total); await new Promise((r) => setTimeout(r, 2600)); setCelebrate(null);
+    if (total > 0) await showWin({ amount: total, bet });
     setBusy(false);
   };
 
@@ -104,12 +110,19 @@ export function SlotGame() {
               {s.label}
             </button>
           ))}
+          <button disabled={busy} onClick={() => setPreviewOpen(true)} className="ml-1 h-7 rounded-md bg-gold px-2 font-display text-sm text-panel disabled:opacity-50">WIN PREVIEW</button>
         </div>
 
+        <div className="absolute right-2 top-2 flex flex-col items-end gap-1.5 sm:right-4 sm:top-4">
+        <a href="/downloads/hubie_win_pack.zip" download="hubie_win_pack.zip"
+          className="flex items-center gap-1.5 rounded-xl border-2 border-gold bg-panel/90 px-3 py-1.5 font-display text-sm text-gold shadow-lg hover:bg-gold/20">
+          <Download className="h-4 w-4" /> Download Win Pack (.zip)
+        </a>
         <a href="/downloads/hubie_rig.zip" download="hubie_rig.zip"
-          className="absolute right-2 top-2 flex items-center gap-1.5 rounded-xl border-2 border-gold bg-panel/90 px-3 py-1.5 font-display text-sm text-gold shadow-lg hover:bg-gold/20 sm:right-4 sm:top-4">
+          className="flex items-center gap-1.5 rounded-xl border-2 border-gold bg-panel/90 px-3 py-1.5 font-display text-sm text-gold shadow-lg hover:bg-gold/20">
           <Download className="h-4 w-4" /> Download Hubie Rig (.zip)
         </a>
+        </div>
 
         <img src={logo} alt="Hubie's Gold Rush" className="logo-fade mt-10 w-[min(70vw,360px)] sm:mt-2" />
 
@@ -159,15 +172,19 @@ export function SlotGame() {
         </div>
       </div>
 
-      {celebrate !== null && (
-        <div className="pointer-events-none fixed inset-0 z-40 grid place-items-center bg-background/50">
-          {Array.from({ length: 24 }).map((_, i) => <span key={i} className="coin-rain" style={{ left: `${(i * 41) % 100}%`, animationDelay: `${(i % 8) * 0.12}s` }} />)}
-          <div className="celebrate text-center">
-            <div className="font-display text-6xl text-gold drop-shadow-[0_4px_0_var(--panel)] sm:text-8xl">BIG WIN!</div>
-            <div className="mt-2 font-display text-4xl sm:text-6xl">{fmt(celebrate)}</div>
+      {celebrate && <WinCelebration key={`${celebrate.amount}-${celebrate.tier}`} amount={celebrate.amount} bet={celebrate.bet} fixedTier={celebrate.tier} sound={sound} onDone={closeWin} />}
+
+      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+        <DialogContent className="border-2 border-gold bg-panel text-foreground">
+          <DialogHeader><DialogTitle className="font-display text-2xl text-gold">Win Celebration Preview</DialogTitle><DialogDescription className="text-foreground/70">Try each panel at a $1.00 bet. Tap the celebration to skip.</DialogDescription></DialogHeader>
+          <div className="grid grid-cols-2 gap-2">
+            {([["win", "WIN", 12.5], ["big_win", "BIG WIN", 34.2], ["superb_win", "SUPERB WIN", 86.75], ["max_win", "MAX WIN", 5000]] as const).map(([id, label, amt]) => (
+              <button key={id} className="pill h-11 font-display" onClick={() => { setPreviewOpen(false); void showWin({ amount: amt, bet: 1, tier: id }); }}>{label}</button>
+            ))}
+            <button className="col-span-2 h-12 rounded-full bg-gold font-display text-panel" onClick={() => { setPreviewOpen(false); void showWin({ amount: 5000, bet: 1 }); }}>FULL ESCALATION</button>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={bonusOpen} onOpenChange={setBonusOpen}>
         <DialogContent className="border-2 border-gold bg-panel text-foreground">
