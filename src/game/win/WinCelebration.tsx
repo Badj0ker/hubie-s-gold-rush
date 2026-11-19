@@ -37,7 +37,7 @@ const IMPACT: Record<WinTierId, number> = { win: 0, big_win: 1, superb_win: 2, m
 export interface WinCelebrationProps {
   amount: number; bet: number; sound?: boolean;
   /** Show only this panel (preview). Otherwise panels escalate as the counter rolls up. */
-  fixedTier?: WinTierId;
+  fixedTier?: WinTierId | undefined;
   onDone: () => void;
 }
 

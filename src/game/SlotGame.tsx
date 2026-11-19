@@ -44,10 +44,10 @@ export function SlotGame() {
   const [bonusOpen, setBonusOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
-  const [celebrate, setCelebrate] = useState<{ amount: number; bet: number; tier?: WinTierId } | null>(null);
+  const [celebrate, setCelebrate] = useState<{ amount: number; bet: number; tier?: WinTierId | undefined } | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const doneRef = useRef<(() => void) | null>(null);
-  const showWin = (c: { amount: number; bet: number; tier?: WinTierId }) => new Promise<void>((res) => { doneRef.current = res; setCelebrate(c); });
+  const showWin = (c: { amount: number; bet: number; tier?: WinTierId | undefined }) => new Promise<void>((res) => { doneRef.current = res; setCelebrate(c); });
   const closeWin = useCallback(() => { setCelebrate(null); doneRef.current?.(); doneRef.current = null; }, []);
   const [freeSpins, setFreeSpins] = useState<number | null>(null);
   const bet = BETS[betIdx]!;
