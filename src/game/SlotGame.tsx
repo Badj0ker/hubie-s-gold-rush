@@ -124,7 +124,7 @@ export function SlotGame() {
         </a>
         </div>
 
-        <img src={logo} alt="Hubie's Gold Rush" className="logo-fade mt-10 w-[min(70vw,360px)] sm:mt-2" />
+        <img src={logo} alt="Hubie's Gold Rush" className="mt-10 w-[min(70vw,360px)] sm:mt-2" />
 
         <div className="relative mt-1 w-[min(94vw,calc(100dvh-270px),760px)]">
           {freeSpins !== null && (
